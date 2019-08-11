@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +13,7 @@ namespace WARDEN
     {
         static Thread PingThread;
         static IPEndPoint GameServer; 
-        static  UdpClient UPing;
+   
 
         static int PingDelay;
         static int PingTimeout;
@@ -38,7 +38,7 @@ namespace WARDEN
                 try
                 {
                     GameServer = new IPEndPoint(IPAddress.Parse(ip), Convert.ToInt16(port));
-                    UPing = new UdpClient();
+             
                     PingThread = new Thread(new ThreadStart(pingSpin));
                     PingThread.Start(); 
 
@@ -103,15 +103,23 @@ namespace WARDEN
         {
             try
             {
-                UPing.Connect(GameServer);
-                UPing.Send(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, 0x56, 0xFF, 0xFF, 0xFF, 0xFF }, 9);
-                UPing.Client.ReceiveTimeout = PingTimeout * 1000;
+                using (UdpClient UPing = new UdpClient())
+                {
+                    UPing.Connect(GameServer);
+                    UPing.Send(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, 0x56, 0xFF, 0xFF, 0xFF, 0xFF }, 9);
+                    UPing.Client.ReceiveTimeout = PingTimeout * 1000;
 
-                byte[] resp = UPing.Receive(ref GameServer);
-                return true;
+
+                    byte[] resp = UPing.Receive(ref GameServer);
+         
+                    UPing.Close(); 
+
+                   
+                    return true;
+                }
             } catch (Exception E)
             {
-               // Console.WriteLine(E);
+              
                 return false;
             }
 
